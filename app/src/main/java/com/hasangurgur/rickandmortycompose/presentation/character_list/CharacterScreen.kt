@@ -1,12 +1,15 @@
 package com.hasangurgur.rickandmortycompose.presentation.character_list
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,12 +34,17 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.hasangurgur.rickandmortycompose.R
 import com.hasangurgur.rickandmortycompose.data.remote.dto.CharacterDto
+import com.hasangurgur.rickandmortycompose.presentation.navigation.Screen
 
 @Composable
-fun CharacterScreen(viewModel: CharacterViewModel = hiltViewModel()) {
+fun CharacterScreen(
+    viewModel: CharacterViewModel = hiltViewModel(),
+    navController: NavController
+) {
     val uiState = viewModel.uiState.collectAsState().value
 
     when (uiState) {
@@ -50,7 +58,9 @@ fun CharacterScreen(viewModel: CharacterViewModel = hiltViewModel()) {
         }
 
         is CharacterUiState.Success -> {
-            CharacterList(characters = uiState.characters)
+            CharacterList(characters = uiState.characters, onItemClick = { characterId ->
+                navController.navigate(Screen.CharacterDetail.passCharacterId(characterId))
+            })
         }
 
         is CharacterUiState.Error -> {
@@ -66,14 +76,14 @@ fun CharacterScreen(viewModel: CharacterViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun CharacterList(characters: List<CharacterDto>) {
+fun CharacterList(characters: List<CharacterDto>, onItemClick: (Int) -> Unit) {
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(8.dp)
     ) {
         items(characters) { character ->
-            CharacterItem(character)
+            CharacterItem(character, onItemClick = onItemClick)
             Spacer(modifier = Modifier.height(8.dp))
 
         }
@@ -81,13 +91,17 @@ fun CharacterList(characters: List<CharacterDto>) {
 }
 
 @Composable
-fun CharacterItem(character: CharacterDto) {
+fun CharacterItem(character: CharacterDto, onItemClick: (Int) -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onItemClick(character.id) },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier
+                .padding(8.dp)
+                .height(IntrinsicSize.Min)
         ) {
             Image(
                 painter = rememberAsyncImagePainter(character.image),
@@ -96,13 +110,36 @@ fun CharacterItem(character: CharacterDto) {
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(12.dp))
-            Column(verticalArrangement = Arrangement.Center) {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ){
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .align(Alignment.TopStart)
+                    .padding(end = 8.dp)
+                ,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text(
                     text = character.name,
                     style = MaterialTheme.typography.titleMedium
                 )
 
                 StatusText(status = character.status)
+
+            }
+                Text(
+                    text = character.species,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = colorResource(R.color.black),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 8.dp, bottom = 4.dp)
+                )
             }
         }
     }
