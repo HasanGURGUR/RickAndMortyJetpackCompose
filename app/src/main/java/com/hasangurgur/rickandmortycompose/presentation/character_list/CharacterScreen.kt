@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -51,6 +52,7 @@ fun CharacterScreen(
         is CharacterUiState.Loading -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
+
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -79,7 +81,7 @@ fun CharacterScreen(
 fun CharacterList(characters: List<CharacterDto>, onItemClick: (Int) -> Unit) {
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 8.dp),
         contentPadding = PaddingValues(8.dp)
     ) {
         items(characters) { character ->

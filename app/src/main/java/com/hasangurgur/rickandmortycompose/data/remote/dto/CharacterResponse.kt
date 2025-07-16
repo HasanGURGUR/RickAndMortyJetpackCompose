@@ -13,4 +13,12 @@ data class CharacterDto(
     val status: String,
     val image: String,
     val species : String,
+    val gender : String,
+    val location : LocationOriginDto,
+    val origin : LocationOriginDto
+)
+
+data class LocationOriginDto(
+    val name: String,
+    val url: String
 )
