@@ -4,7 +4,9 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.hasangurgur.rickandmortycompose.data.remote.CharacterApi
 import com.hasangurgur.rickandmortycompose.data.repository.CharacterRepositoryImpl
+import com.hasangurgur.rickandmortycompose.data.repository.EpisodeRepositoryImpl
 import com.hasangurgur.rickandmortycompose.domain.repository.CharacterRepository
+import com.hasangurgur.rickandmortycompose.domain.repository.EpisodeRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,5 +43,10 @@ object NetworkModule {
     @Singleton
     fun provideCharacterRepository(api : CharacterApi): CharacterRepository =
         CharacterRepositoryImpl(api)
+
+    @Provides
+    @Singleton
+    fun provideEpisodeRepository(api: CharacterApi): EpisodeRepository =
+       EpisodeRepositoryImpl(api)
 
 }
