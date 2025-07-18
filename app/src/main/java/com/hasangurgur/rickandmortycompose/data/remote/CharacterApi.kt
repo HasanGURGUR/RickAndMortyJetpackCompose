@@ -10,7 +10,7 @@ import retrofit2.http.Query
 interface CharacterApi {
 
     @GET("character")
-    suspend fun getCharacters(): CharacterResponse
+    suspend fun getCharacters(@Query("page") page: Int = 1): CharacterResponse
 
     @GET("episode")
     suspend fun getEpisodes(@Query("page") page : Int = 1): EpisodeResponse

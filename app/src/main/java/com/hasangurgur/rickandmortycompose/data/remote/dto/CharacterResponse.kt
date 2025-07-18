@@ -3,6 +3,8 @@ package com.hasangurgur.rickandmortycompose.data.remote.dto
 import com.google.gson.annotations.SerializedName
 
 data class CharacterResponse(
+    @SerializedName("info")
+    val info: InfoDto,
     @SerializedName("results")
     val results: List<CharacterDto>
 )
@@ -37,4 +39,11 @@ data class EpisodeDto(
 
 data class EpisodeResponse(
     val results: List<EpisodeDto>
+)
+
+data class InfoDto(
+    val count: Int,
+    val pages: Int,
+    val next: String?,
+    val prev: String?
 )

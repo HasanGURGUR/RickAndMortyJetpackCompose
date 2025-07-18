@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,12 +48,13 @@ fun CharacterScreen(
     navController: NavController
 ) {
     val uiState = viewModel.uiState.collectAsState().value
+    val listState = rememberLazyListState()
 
     when (uiState) {
         is CharacterUiState.Loading -> {
+            // Sadece ilk yüklemede tam ekran loading göster
             Box(
                 modifier = Modifier.fillMaxSize(),
-
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -60,9 +62,14 @@ fun CharacterScreen(
         }
 
         is CharacterUiState.Success -> {
-            CharacterList(characters = uiState.characters, onItemClick = { characterId ->
-                navController.navigate(Screen.CharacterDetail.passCharacterId(characterId))
-            })
+            CharacterList(
+                characters = uiState.characters,
+                onItemClick = { characterId ->
+                    navController.navigate(Screen.CharacterDetail.passCharacterId(characterId))
+                },
+                viewModel = viewModel,
+                listState = listState
+            )
         }
 
         is CharacterUiState.Error -> {
@@ -74,20 +81,37 @@ fun CharacterScreen(
             }
         }
     }
-
 }
 
 @Composable
-fun CharacterList(characters: List<CharacterDto>, onItemClick: (Int) -> Unit) {
-
+fun CharacterList(
+    characters: List<CharacterDto>,
+    onItemClick: (Int) -> Unit,
+    viewModel: CharacterViewModel,
+    listState: androidx.compose.foundation.lazy.LazyListState
+) {
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 8.dp),
         contentPadding = PaddingValues(8.dp)
     ) {
-        items(characters) { character ->
+        items(characters.size) { index ->
+            val character = characters[index]
             CharacterItem(character, onItemClick = onItemClick)
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Listenin sonuna gelindiyse yeni sayfa isteği
+            if (index == characters.lastIndex) {
+                viewModel.fetchCharacters()
+                if (viewModel.isPaging()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                    }
+                }
+            }
         }
     }
 }

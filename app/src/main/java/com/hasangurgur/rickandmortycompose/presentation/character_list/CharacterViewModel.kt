@@ -25,18 +25,49 @@ class CharacterViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<CharacterUiState>(CharacterUiState.Loading)
     val uiState : StateFlow<CharacterUiState> = _uiState
 
+    private var currentPage = 1
+    private var isLoading = false
+    private var endReached = false
+    private val loadedCharacters = mutableListOf<CharacterDto>()
+    private var totalPages: Int? = null
+    private var isPagingLoading = false
+
     init {
         fetchCharacters()
     }
 
-    private fun fetchCharacters(){
+    fun fetchCharacters() {
+        if (isLoading || endReached) return
+        if (currentPage == 1) {
+            isLoading = true
+            _uiState.value = CharacterUiState.Loading
+        } else {
+            isPagingLoading = true
+            // UI'da bu değişkeni kullanacağız
+        }
+
         viewModelScope.launch {
             try {
-                val characters = getCharactersUseCase()
-                _uiState.value = CharacterUiState.Success(characters)
-            }catch (e: Exception) {
+                val response = getCharactersUseCase(currentPage)
+                totalPages = response.info.pages
+                if (currentPage > (totalPages ?: 1)) {
+                    endReached = true
+                } else {
+                    loadedCharacters.addAll(response.results)
+                    _uiState.value = CharacterUiState.Success(loadedCharacters.toList())
+                    currentPage++
+                    if (currentPage > (totalPages ?: 1)) {
+                        endReached = true
+                    }
+                }
+            } catch (e: Exception) {
                 _uiState.value = CharacterUiState.Error(e.message ?: "An unexpected error occurred")
+            } finally {
+                isLoading = false
+                isPagingLoading = false
             }
         }
     }
+
+    fun isPaging(): Boolean = isPagingLoading
 }
